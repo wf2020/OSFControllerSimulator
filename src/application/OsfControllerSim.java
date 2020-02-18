@@ -15,8 +15,6 @@ import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
-
 import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.Timer;
@@ -149,7 +147,12 @@ public class OsfControllerSim extends Application implements Initializable, Seri
 	public void start(Stage primaryStage) {
 		try {
 	        primaryStage.setTitle("OSF Controller Simulator");
-	        Parent root = FXMLLoader.load(getClass().getResource("OsfControllerSim.fxml"));
+	        URL url = ClassLoader.getSystemResource("osfControllerSim.fxml");
+	        if (url == null) {
+	        	System.out.println("osfControllerSim.fxml NOT Found!!");
+	        	System.exit(-1);
+	        }
+	        Parent root = FXMLLoader.load(url);
 	        Scene scene = new Scene(root, 800, 700);
 	        scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 	        primaryStage.setScene(scene);

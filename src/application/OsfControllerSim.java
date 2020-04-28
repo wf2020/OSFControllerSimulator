@@ -26,7 +26,7 @@ import com.fazecast.jSerialComm.*;
 public class OsfControllerSim extends Application implements Initializable, SerialPortDataListener {
 	private static final byte LCD_MSG_ID = 0x59;
 	private static final byte CT_MSG_ID = 0x43;
-	private static final int CT_OS_MSG_BYTES = 24;
+	private static final int CT_OS_MSG_BYTES = 29;
 	private static final int  LCD_OS_MSG_BYTES = 10;
 
 	@FXML
@@ -34,6 +34,8 @@ public class OsfControllerSim extends Application implements Initializable, Seri
 	@FXML
 	private ChoiceBox<String> port;
 	
+    @FXML
+    private Slider fw;	
 	@FXML
 	private Slider volts;
 	@FXML
@@ -118,7 +120,8 @@ public class OsfControllerSim extends Application implements Initializable, Seri
     private static final String[] values = {OK,MOTORBLOCKED,ERRTORQUE,ERRCAD};
     private static final String[] modes = {"OFF","POVER","TORQUE","CADENCE","EMTB","WALK","CRUISE","CALIB"};
     
-
+    private long timeCounter = 0;
+    
     Timer timer = new Timer(); 
     TimerTask task = new MyTask(); 
 	
@@ -168,6 +171,7 @@ public class OsfControllerSim extends Application implements Initializable, Seri
 	
     public void serialConnect() {
         if (serialPort == null || !serialPort.isOpen()) {
+            timeCounter = 0;
             if (openSerialPort()) {
                startButton.setText("Stop");
                timer = new Timer(); 
@@ -268,6 +272,11 @@ public class OsfControllerSim extends Application implements Initializable, Seri
     	int i;
     	public void run() {
     		
+    	    timeCounter++;
+    	    long distanza = (timeCounter * (long)(OsfControllerSim.this.speed.getValue() * 1000f)) / 36; // distanza percorsa in mm
+    	    long wheelRev = distanza/2300;
+            long crankRev = distanza/4600;
+    	    
     		byte[] msg = new byte[CT_OS_MSG_BYTES];
 
     		int val;
@@ -278,31 +287,43 @@ public class OsfControllerSim extends Application implements Initializable, Seri
     		val = (int)(OsfControllerSim.this.volts.getValue() * 1000);
     		msg[1] = (byte)(val&0xff);
     		msg[2] = (byte)((val>>8) & 0xff);
+    		
     		// Current
     		msg[3] = (byte)(OsfControllerSim.this.current.getValue()*10);
+    		
     		// wheel speed
     		val = (int)(OsfControllerSim.this.speed.getValue() * 10);
     		msg[4] = (byte)(val&0xff);
     		msg[5] = (byte)((val>>8) & 0xff);
+    		
     		// brake state
     		msg[6] = (byte)(OsfControllerSim.this.brake.isSelected()?1:0);
+    		val = (int)OsfControllerSim.this.fw.getValue();
+    		msg[6] |= (byte)((val<<1) & 0xfe);
+    		
     		// value from optional ADC channel
     		msg[7] = (byte)(OsfControllerSim.this.adcValue.getValue());
     		msg[8] = (byte)(OsfControllerSim.this.adcValue.getValue());
+    		
     		// ADC pedal torque
     		val = (int)(OsfControllerSim.this.torqueADC.getValue());
     		msg[9] = (byte)(val&0xff);
     		msg[10] = (byte)((val>>8) & 0xff);
+    		
     		// pedal cadence
     		msg[11] = (byte)(OsfControllerSim.this.cadence.getValue());
+    		
     		// PWM duty_cycle
     		msg[12] = (byte)(OsfControllerSim.this.dutyCycle.getValue());
+    		
     		// motor speed in ERPS
     		val = (int)(OsfControllerSim.this.erps.getValue());
     		msg[13] = (byte)(val&0xff);
     		msg[14] = (byte)((val>>8) & 0xff);
+    		
     		// FOC angle
     		msg[15] = (byte)(OsfControllerSim.this.foc.getValue());
+    		
     		// controller system state
     		switch(OsfControllerSim.this.state.getValue()) {
     		case OK:
@@ -320,14 +341,25 @@ public class OsfControllerSim extends Application implements Initializable, Seri
     		}
     		// motor temperature
     		msg[17] = (byte)(OsfControllerSim.this.temperature.getValue());
+    		
+            // wheel_speed_sensor_tick_counter
+    		msg[18] = (byte) (wheelRev & 0xff);
+    		msg[19] = (byte) ((wheelRev >> 8) & 0xff);
+    		msg[20] = (byte) ((wheelRev >> 16) & 0xff);
+    		
     		// pedal torque x100
     		val = (int)(OsfControllerSim.this.pedalTorque.getValue()*100);
-    		msg[18] = (byte)(val&0xff);
-    		msg[19] = (byte)((val>>8) & 0xff);
+    		msg[21] = (byte)(val&0xff);
+    		msg[22] = (byte)((val>>8) & 0xff);
+            
+            // Crank revolutions
+            msg[23] = (byte)(crankRev&0xff);
+            msg[24] = (byte)((crankRev>>8) & 0xff);
+            
     		// cadence sensor pulse high percentage
     		val = (int)(OsfControllerSim.this.highPercent.getValue()*10);
-    		msg[20] = (byte)(val&0xff);
-    		msg[21] = (byte)((val>>8) & 0xff);
+    		msg[25] = (byte)(val&0xff);
+    		msg[26] = (byte)((val>>8) & 0xff);
 
     		// Calcolo CRC
     		int crc_tx = 0xffff;

@@ -120,7 +120,8 @@ public class OsfControllerSim extends Application implements Initializable, Seri
     private static final String[] values = {OK,MOTORBLOCKED,ERRTORQUE,ERRCAD};
     private static final String[] modes = {"OFF","POVER","TORQUE","CADENCE","EMTB","WALK","CRUISE","CALIB"};
     
-    private long timeCounter = 0;
+    private double odo = 0;
+    private double revs = 0;
     
     Timer timer = new Timer(); 
     TimerTask task = new MyTask(); 
@@ -171,7 +172,7 @@ public class OsfControllerSim extends Application implements Initializable, Seri
 	
     public void serialConnect() {
         if (serialPort == null || !serialPort.isOpen()) {
-            timeCounter = 0;
+            odo = 0;
             if (openSerialPort()) {
                startButton.setText("Stop");
                timer = new Timer(); 
@@ -272,10 +273,10 @@ public class OsfControllerSim extends Application implements Initializable, Seri
     	int i;
     	public void run() {
     		
-    	    timeCounter++;
-    	    long distanza = (timeCounter * (long)(OsfControllerSim.this.speed.getValue() * 1000f)) / 36; // distanza percorsa in mm
-    	    long wheelRev = distanza/2300;
-            long crankRev = distanza/4600;
+    	    odo +=  OsfControllerSim.this.speed.getValue() * 1000. / 36.; // distanza percorsa in mm
+    	    revs += OsfControllerSim.this.cadence.getValue() / 60 * 0.1; // numero rivoluziioni pedali
+    	    long wheelRev = (long)odo/2300;
+            long crankRev = (long)revs;
     	    
     		byte[] msg = new byte[CT_OS_MSG_BYTES];
 

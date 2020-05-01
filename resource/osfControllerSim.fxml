@@ -79,7 +79,7 @@
                                           <Insets left="5.0" />
                                        </GridPane.margin>
                                     </CheckBox>
-                                    <Slider fx:id="fw" blockIncrement="0.1" majorTickUnit="5.0" max="50.0" min="25.0" minorTickCount="5" showTickLabels="true" showTickMarks="true" value="36.0" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER">
+                                    <Slider fx:id="volts" blockIncrement="0.1" majorTickUnit="5.0" max="50.0" min="25.0" minorTickCount="5" showTickLabels="true" showTickMarks="true" value="36.0" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER">
                                        <GridPane.margin>
                                           <Insets bottom="10.0" top="10.0" />
                                        </GridPane.margin>
@@ -147,7 +147,7 @@
                                     </Slider>
                                     <Slider fx:id="highPercent" blockIncrement="1.0" majorTickUnit="15.0" max="80.0" min="20.0" showTickLabels="true" showTickMarks="true" GridPane.columnIndex="1" GridPane.rowIndex="14" />
                                     <Label text="FW Version" GridPane.halignment="CENTER" GridPane.valignment="CENTER" />
-                                    <Slider fx:id="volts1" blockIncrement="1.0" majorTickUnit="20.0" max="127.0" minorTickCount="10" showTickLabels="true" showTickMarks="true" value="1.0" GridPane.columnIndex="1" />
+                                    <Slider fx:id="fw" blockIncrement="1.0" majorTickUnit="20.0" max="127.0" minorTickCount="10" showTickLabels="true" showTickMarks="true" value="1.0" GridPane.columnIndex="1" />
                                  </children>
                                  <padding>
                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />

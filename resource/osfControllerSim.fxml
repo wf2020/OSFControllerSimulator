@@ -112,29 +112,29 @@
                                     <Label text="FOC Angle" GridPane.halignment="CENTER" GridPane.rowIndex="10" GridPane.valignment="CENTER" />
                                     <Label text="State" GridPane.halignment="CENTER" GridPane.rowIndex="11" GridPane.valignment="CENTER" />
                                     <Label text="Temperature" GridPane.halignment="CENTER" GridPane.rowIndex="12" GridPane.valignment="CENTER" />
-                                    <Slider fx:id="cadence" blockIncrement="1.0" majorTickUnit="20.0" minorTickCount="10" showTickLabels="true" showTickMarks="true" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="7" GridPane.valignment="CENTER">
+                                    <Slider fx:id="cadence" blockIncrement="1.0" majorTickUnit="20.0" max="120.0" minorTickCount="10" showTickLabels="true" showTickMarks="true" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="7" GridPane.valignment="CENTER">
                                        <GridPane.margin>
                                           <Insets bottom="10.0" top="10.0" />
                                        </GridPane.margin>
                                     </Slider>
-                                    <Slider fx:id="dutyCycle" blockIncrement="1.0" majorTickUnit="20.0" minorTickCount="10" showTickLabels="true" showTickMarks="true" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="8" GridPane.valignment="CENTER">
+                                    <Slider fx:id="dutyCycle" blockIncrement="1.0" majorTickUnit="20.0" max="255.0" minorTickCount="10" showTickLabels="true" showTickMarks="true" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="8" GridPane.valignment="CENTER">
                                        <GridPane.margin>
                                           <Insets bottom="10.0" top="10.0" />
                                        </GridPane.margin>
                                     </Slider>
-                                    <Slider fx:id="erps" blockIncrement="1.0" majorTickUnit="15.0" max="90.0" minorTickCount="5" showTickLabels="true" showTickMarks="true" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="9" GridPane.valignment="CENTER">
+                                    <Slider fx:id="erps" blockIncrement="5.0" majorTickUnit="15.0" max="650.0" minorTickCount="5" showTickLabels="true" showTickMarks="true" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="9" GridPane.valignment="CENTER">
                                        <GridPane.margin>
                                           <Insets bottom="10.0" top="10.0" />
                                        </GridPane.margin>
                                     </Slider>
-                                    <Slider fx:id="foc" blockIncrement="1.0" majorTickUnit="30.0" max="180.0" minorTickCount="6" showTickLabels="true" showTickMarks="true" GridPane.columnIndex="1" GridPane.rowIndex="10">
+                                    <Slider fx:id="foc" blockIncrement="1.0" majorTickUnit="4.0" max="16.0" minorTickCount="1" showTickLabels="true" showTickMarks="true" GridPane.columnIndex="1" GridPane.rowIndex="10">
                                        <GridPane.margin>
                                           <Insets bottom="10.0" top="10.0" />
                                        </GridPane.margin>
                                     </Slider>
                                     <ChoiceBox fx:id="state" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="11" GridPane.valignment="CENTER" />
                                     <Label text="Pedal Torque" GridPane.halignment="CENTER" GridPane.rowIndex="13" GridPane.valignment="CENTER" />
-                                    <Label text="Cad High %" GridPane.halignment="CENTER" GridPane.rowIndex="14" GridPane.valignment="CENTER" />
+                                    <Label text="Dummy" GridPane.halignment="CENTER" GridPane.rowIndex="14" GridPane.valignment="CENTER" />
                                     <Slider fx:id="temperature" blockIncrement="1.0" max="125.0" minorTickCount="5" showTickLabels="true" showTickMarks="true" GridPane.columnIndex="1" GridPane.rowIndex="12">
                                        <GridPane.margin>
                                           <Insets bottom="5.0" top="5.0" />
@@ -145,7 +145,7 @@
                                           <Insets bottom="5.0" top="5.0" />
                                        </GridPane.margin>
                                     </Slider>
-                                    <Slider fx:id="highPercent" blockIncrement="1.0" majorTickUnit="15.0" max="80.0" min="20.0" showTickLabels="true" showTickMarks="true" GridPane.columnIndex="1" GridPane.rowIndex="14" />
+                                    <Slider fx:id="dummy" blockIncrement="50.0" majorTickUnit="1000.0" max="25000.0" min="400.0" minorTickCount="500" showTickLabels="true" showTickMarks="true" GridPane.columnIndex="1" GridPane.rowIndex="14" />
                                     <Label text="FW Version" GridPane.halignment="CENTER" GridPane.valignment="CENTER" />
                                     <Slider fx:id="fw" blockIncrement="1.0" majorTickUnit="20.0" max="127.0" minorTickCount="10" showTickLabels="true" showTickMarks="true" value="1.0" GridPane.columnIndex="1" />
                                  </children>
@@ -220,15 +220,15 @@
                                     <Label text="Torque x ADC step" GridPane.halignment="CENTER" GridPane.rowIndex="9" GridPane.valignment="CENTER" />
                                     <Label text="Max current" GridPane.halignment="CENTER" GridPane.rowIndex="4" GridPane.valignment="CENTER" />
                                     <Label text="Max power" GridPane.halignment="CENTER" GridPane.rowIndex="5" GridPane.valignment="CENTER" />
-                                    <Label text="Cad. sensor mode" GridPane.halignment="CENTER" GridPane.rowIndex="6" GridPane.valignment="CENTER" />
-                                    <Label text="Cad. high %" GridPane.halignment="CENTER" GridPane.rowIndex="7" GridPane.valignment="CENTER" />
+                                    <Label text="Motor Angle adj." GridPane.halignment="CENTER" GridPane.rowIndex="6" GridPane.valignment="CENTER" />
+                                    <Label text="TBD" GridPane.halignment="CENTER" GridPane.rowIndex="7" GridPane.valignment="CENTER" />
                                     <Label fx:id="torqueADCStep" text="-" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="9" GridPane.valignment="CENTER" />
                                     <Label fx:id="motorAccel" text="-" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="3" GridPane.valignment="CENTER" />
                                     <Label fx:id="assistWORotation" text="-" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="8" GridPane.valignment="CENTER" />
                                     <Label fx:id="maxCurrent" text="-" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="4" GridPane.valignment="CENTER" />
                                     <Label fx:id="maxPower" text="-" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="5" GridPane.valignment="CENTER" />
-                                    <Label fx:id="cadSensorMode" text="-" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="6" GridPane.valignment="CENTER" />
-                                    <Label fx:id="cadHighPercent" text="-" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="7" GridPane.valignment="CENTER" />
+                                    <Label fx:id="motorAngleAdj" text="-" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="6" GridPane.valignment="CENTER" />
+                                    <Label fx:id="tbd" text="-" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="7" GridPane.valignment="CENTER" />
                                  </children>
                               </GridPane>
                            </children>

@@ -63,7 +63,7 @@ public class OsfControllerSim extends Application implements Initializable, Seri
 	@FXML
 	private Slider pedalTorque;
 	@FXML
-	private Slider highPercent;
+	private Slider dummy;
 	
 	@FXML
 	private Label ridingMode;
@@ -98,9 +98,9 @@ public class OsfControllerSim extends Application implements Initializable, Seri
 	@FXML
 	private Label maxPower;
 	@FXML
-	private Label cadSensorMode;	
+	private Label motorAngleAdj;	
 	@FXML
-	private Label cadHighPercent;
+	private Label tbd;
 	
 	
 	@FXML
@@ -118,7 +118,7 @@ public class OsfControllerSim extends Application implements Initializable, Seri
     
     
     private static final String[] values = {OK,MOTORBLOCKED,ERRTORQUE,ERRCAD};
-    private static final String[] modes = {"OFF","POVER","TORQUE","CADENCE","EMTB","WALK","CRUISE","CALIB"};
+    private static final String[] modes = {"OFF","POVER","TORQUE","CADENCE","EMTB","WALK","CRUISE","CALIB","MTEST"};
     
     private double odo = 0;
     private double revs = 0;
@@ -227,7 +227,7 @@ public class OsfControllerSim extends Application implements Initializable, Seri
     public void updateGUI(byte[] data) {
     	String str;
     	int val;
-    	str = modes[data[2]] + " - " + String.valueOf(data[3]);
+    	str = modes[data[2]] + " - " + String.valueOf((data[3]&0xff));
     	this.ridingMode.setText(str);
     	this.lights.setText(data[4]>0?"ON":"OFF");
     	switch (data[1]) {
@@ -261,10 +261,10 @@ public class OsfControllerSim extends Application implements Initializable, Seri
         	this.maxPower.setText(String.valueOf(data[7]));
     		break;
     	case 6:
-        	this.cadSensorMode.setText(String.valueOf(data[5]));
+        	this.motorAngleAdj.setText(String.valueOf(data[5]&0xff));
     		val = unsignedByteToInt(data[6]);
             val += unsignedByteToInt(data[7]) << 8;
-        	this.cadHighPercent.setText(String.valueOf(val));
+        	this.tbd.setText(String.valueOf(val));
     		break;
     	}
     }
@@ -297,51 +297,52 @@ public class OsfControllerSim extends Application implements Initializable, Seri
     		msg[4] = (byte)(val&0xff);
     		msg[5] = (byte)((val>>8) & 0xff);
     		
-    		// brake state
-    		msg[6] = (byte)(OsfControllerSim.this.brake.isSelected()?1:0);
-    		val = (int)OsfControllerSim.this.fw.getValue();
-    		msg[6] |= (byte)((val<<1) & 0xfe);
-    		
-    		// value from optional ADC channel
-    		msg[7] = (byte)(OsfControllerSim.this.adcValue.getValue());
-    		msg[8] = (byte)(OsfControllerSim.this.adcValue.getValue());
-    		
-    		// ADC pedal torque
-    		val = (int)(OsfControllerSim.this.torqueADC.getValue());
-    		msg[9] = (byte)(val&0xff);
-    		msg[10] = (byte)((val>>8) & 0xff);
-    		
     		// pedal cadence
-    		msg[11] = (byte)(OsfControllerSim.this.cadence.getValue());
+    		msg[6] = (byte)(OsfControllerSim.this.cadence.getValue());
     		
-    		// PWM duty_cycle
-    		msg[12] = (byte)(OsfControllerSim.this.dutyCycle.getValue());
-    		
-    		// motor speed in ERPS
-    		val = (int)(OsfControllerSim.this.erps.getValue());
-    		msg[13] = (byte)(val&0xff);
-    		msg[14] = (byte)((val>>8) & 0xff);
-    		
-    		// FOC angle
-    		msg[15] = (byte)(OsfControllerSim.this.foc.getValue());
+    		// brake state & FW Version
+    		msg[7] = (byte)(OsfControllerSim.this.brake.isSelected()?1:0);
+    		val = (int)OsfControllerSim.this.fw.getValue();
+    		msg[7] |= (byte)((val<<1) & 0xfe);
     		
     		// controller system state
     		switch(OsfControllerSim.this.state.getValue()) {
     		case OK:
-    			msg[16] = 0;
+    			msg[8] = 0;
     			break;
     		case MOTORBLOCKED:
-    			msg[16] = 1;
+    			msg[8] = 1;
     			break;
     		case ERRTORQUE:
-    			msg[16] = 2;
+    			msg[8] = 2;
     			break;
     		case ERRCAD:
-    			msg[16] = 7;
+    			msg[8] = 7;
     			break;
     		}
+
     		// motor temperature
-    		msg[17] = (byte)(OsfControllerSim.this.temperature.getValue());
+    		msg[9] = (byte)(OsfControllerSim.this.temperature.getValue());
+    		
+    		// value from optional ADC channel
+    		msg[10] = (byte)(OsfControllerSim.this.adcValue.getValue());
+    		msg[11] = (byte)(OsfControllerSim.this.adcValue.getValue());
+    		
+    		// ADC pedal torque
+    		val = (int)(OsfControllerSim.this.torqueADC.getValue());
+    		msg[12] = (byte)(val&0xff);
+    		msg[13] = (byte)((val>>8) & 0xff);
+    		
+    		// PWM duty_cycle
+    		msg[14] = (byte)(OsfControllerSim.this.dutyCycle.getValue());
+    		
+    		// motor speed in ERPS
+    		val = (int)(OsfControllerSim.this.erps.getValue());
+    		msg[15] = (byte)(val&0xff);
+    		msg[16] = (byte)((val>>8) & 0xff);
+    		
+    		// FOC angle
+    		msg[17] = (byte)(OsfControllerSim.this.foc.getValue());
     		
             // wheel_speed_sensor_tick_counter
     		msg[18] = (byte) (wheelRev & 0xff);
@@ -358,7 +359,7 @@ public class OsfControllerSim extends Application implements Initializable, Seri
             msg[24] = (byte)((crankRev>>8) & 0xff);
             
     		// cadence sensor pulse high percentage
-    		val = (int)(OsfControllerSim.this.highPercent.getValue()*10);
+    		val = (int)(OsfControllerSim.this.dummy.getValue());
     		msg[25] = (byte)(val&0xff);
     		msg[26] = (byte)((val>>8) & 0xff);
 

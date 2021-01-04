@@ -122,6 +122,7 @@ public class OsfControllerSim extends Application implements Initializable, Seri
     
     private double odo = 0;
     private double revs = 0;
+    private byte   ridingModeVal = 0;
     
     Timer timer = new Timer(); 
     TimerTask task = new MyTask(); 
@@ -227,6 +228,7 @@ public class OsfControllerSim extends Application implements Initializable, Seri
     public void updateGUI(byte[] data) {
     	String str;
     	int val;
+    	ridingModeVal = data[2];
     	str = modes[data[2]] + " - " + String.valueOf((data[3]&0xff));
     	this.ridingMode.setText(str);
     	this.lights.setText(data[4]>0?"ON":"OFF");
@@ -324,44 +326,59 @@ public class OsfControllerSim extends Application implements Initializable, Seri
     		// motor temperature
     		msg[9] = (byte)(OsfControllerSim.this.temperature.getValue());
     		
-    		// value from optional ADC channel
-    		msg[10] = (byte)(OsfControllerSim.this.adcValue.getValue());
-    		msg[11] = (byte)(OsfControllerSim.this.adcValue.getValue());
-    		
-    		// ADC pedal torque
-    		val = (int)(OsfControllerSim.this.torqueADC.getValue());
-    		msg[12] = (byte)(val&0xff);
-    		msg[13] = (byte)((val>>8) & 0xff);
-    		
-    		// PWM duty_cycle
-    		msg[14] = (byte)(OsfControllerSim.this.dutyCycle.getValue());
-    		
-    		// motor speed in ERPS
-    		val = (int)(OsfControllerSim.this.erps.getValue());
-    		msg[15] = (byte)(val&0xff);
-    		msg[16] = (byte)((val>>8) & 0xff);
-    		
-    		// FOC angle
-    		msg[17] = (byte)(OsfControllerSim.this.foc.getValue());
-    		
-            // wheel_speed_sensor_tick_counter
-    		msg[18] = (byte) (wheelRev & 0xff);
-    		msg[19] = (byte) ((wheelRev >> 8) & 0xff);
-    		msg[20] = (byte) ((wheelRev >> 16) & 0xff);
-    		
-    		// pedal torque x100
-    		val = (int)(OsfControllerSim.this.pedalTorque.getValue()*100);
-    		msg[21] = (byte)(val&0xff);
-    		msg[22] = (byte)((val>>8) & 0xff);
-            
-            // Crank revolutions
-            msg[23] = (byte)(crankRev&0xff);
-            msg[24] = (byte)((crankRev>>8) & 0xff);
-            
-    		// cadence sensor pulse high percentage
-    		val = (int)(OsfControllerSim.this.dummy.getValue());
-    		msg[25] = (byte)(val&0xff);
-    		msg[26] = (byte)((val>>8) & 0xff);
+    		if (ridingModeVal == 7) {
+    			msg[10] = (byte)200;
+    			msg[11] = (byte)1;
+    			msg[12] = (byte)190;
+    			msg[13] = (byte)1;
+    			msg[14] = (byte)210;
+    			msg[15] = (byte)1;
+    			msg[16] = (byte)200;
+    			msg[17] = (byte)1;
+    			msg[18] = (byte)180;
+    			msg[19] = (byte)1;
+    			msg[20] = (byte)220;
+    			msg[21] = (byte)1;
+    		} else {
+	    		// value from optional ADC channel
+	    		msg[10] = (byte)(OsfControllerSim.this.adcValue.getValue());
+	    		msg[11] = (byte)(OsfControllerSim.this.adcValue.getValue());
+	    		
+	    		// ADC pedal torque
+	    		val = (int)(OsfControllerSim.this.torqueADC.getValue());
+	    		msg[12] = (byte)(val&0xff);
+	    		msg[13] = (byte)((val>>8) & 0xff);
+	    		
+	    		// PWM duty_cycle
+	    		msg[14] = (byte)(OsfControllerSim.this.dutyCycle.getValue());
+	    		
+	    		// motor speed in ERPS
+	    		val = (int)(OsfControllerSim.this.erps.getValue());
+	    		msg[15] = (byte)(val&0xff);
+	    		msg[16] = (byte)((val>>8) & 0xff);
+	    		
+	    		// FOC angle
+	    		msg[17] = (byte)(OsfControllerSim.this.foc.getValue());
+	    		
+	            // wheel_speed_sensor_tick_counter
+	    		msg[18] = (byte) (wheelRev & 0xff);
+	    		msg[19] = (byte) ((wheelRev >> 8) & 0xff);
+	    		msg[20] = (byte) ((wheelRev >> 16) & 0xff);
+	    		
+	    		// pedal torque x100
+	    		val = (int)(OsfControllerSim.this.pedalTorque.getValue()*100);
+	    		msg[21] = (byte)(val&0xff);
+	    		msg[22] = (byte)((val>>8) & 0xff);
+	            
+	            // Crank revolutions
+	            msg[23] = (byte)(crankRev&0xff);
+	            msg[24] = (byte)((crankRev>>8) & 0xff);
+	            
+	    		// cadence sensor pulse high percentage
+	    		val = (int)(OsfControllerSim.this.dummy.getValue());
+	    		msg[25] = (byte)(val&0xff);
+	    		msg[26] = (byte)((val>>8) & 0xff);
+    		}
 
     		// Calcolo CRC
     		int crc_tx = 0xffff;

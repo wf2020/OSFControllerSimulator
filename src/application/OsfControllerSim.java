@@ -16,6 +16,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextArea;
 import java.net.URL;
+import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -27,7 +28,7 @@ public class OsfControllerSim extends Application implements Initializable, Seri
 	private static final byte LCD_MSG_ID = 0x59;
 	private static final byte CT_MSG_ID = 0x43;
 	private static final int CT_OS_MSG_BYTES = 29;
-	private static final int  LCD_OS_MSG_BYTES = 10;
+	private static final int  LCD_OS_MSG_BYTES = 13;
 
 	@FXML
 	private Button startButton;
@@ -100,7 +101,9 @@ public class OsfControllerSim extends Application implements Initializable, Seri
 	@FXML
 	private Label motorAngleAdj;	
 	@FXML
-	private Label tbd;
+	private Label torqueFix;
+	@FXML
+	private Label phaseAngles;
 	
 	
 	@FXML
@@ -122,7 +125,8 @@ public class OsfControllerSim extends Application implements Initializable, Seri
     
     private double odo = 0;
     private double revs = 0;
-    private byte   ridingModeVal = 0;
+    private byte ridingModeVal = 0;
+    private int  ridingParamVal = 0;
     
     Timer timer = new Timer(); 
     TimerTask task = new MyTask(); 
@@ -229,7 +233,8 @@ public class OsfControllerSim extends Application implements Initializable, Seri
     	String str;
     	int val;
     	ridingModeVal = data[2];
-    	str = modes[data[2]] + " - " + String.valueOf((data[3]&0xff));
+    	ridingParamVal = (data[3]&0xff);
+    	str = modes[ridingModeVal] + " - " + String.valueOf(ridingParamVal);
     	this.ridingMode.setText(str);
     	this.lights.setText(data[4]>0?"ON":"OFF");
     	switch (data[1]) {
@@ -237,36 +242,39 @@ public class OsfControllerSim extends Application implements Initializable, Seri
     		val = unsignedByteToInt(data[5]);
             val += unsignedByteToInt(data[6]) << 8;
         	this.voltCutOff.setText(String.valueOf(val));
-        	this.maxSpeed.setText(String.valueOf(data[7]));
-    		break;
-    	case 1:
-    		val = unsignedByteToInt(data[5]);
-            val += unsignedByteToInt(data[6]) << 8;
-        	this.whelPerimeter.setText(String.valueOf(val));
-        	this.adcOption.setText(String.valueOf(data[7]));
-    		break;
-    	case 2:
-        	this.motorType.setText(String.valueOf(unsignedByteToInt(data[5])));
-        	this.minTemperature.setText(String.valueOf(unsignedByteToInt(data[6])));
-        	this.maxTemperature.setText(String.valueOf(unsignedByteToInt(data[7])));
-    		break;
-    	case 3:
-    		break;
-    	case 4:
-        	this.lightCfg.setText(String.valueOf(data[5]));
-        	this.assistWORotation.setText(String.valueOf(data[6]));
-        	this.motorAccel.setText(String.valueOf(data[7]));
+        	this.maxCurrent.setText(String.valueOf(data[7]));
+        	this.maxPower.setText(String.valueOf(data[8]));
+        	this.motorType.setText(String.valueOf(unsignedByteToInt(data[9])));
+        	this.motorAccel.setText(String.valueOf(data[10]));
         	break;
-    	case 5:
-        	this.torqueADCStep.setText(String.valueOf(data[5]));
-        	this.maxCurrent.setText(String.valueOf(data[6]));
-        	this.maxPower.setText(String.valueOf(data[7]));
-    		break;
-    	case 6:
+    	case 1:
         	this.motorAngleAdj.setText(String.valueOf(data[5]&0xff));
     		val = unsignedByteToInt(data[6]);
             val += unsignedByteToInt(data[7]) << 8;
-        	this.tbd.setText(String.valueOf(val));
+        	this.whelPerimeter.setText(String.valueOf(val));
+        	this.maxSpeed.setText(String.valueOf(data[8]));
+        	this.assistWORotation.setText(String.valueOf(data[9]));
+        	this.lightCfg.setText(String.valueOf(data[10]));
+    		break;
+    	case 2:
+        	this.adcOption.setText(String.valueOf(data[5]));
+        	this.minTemperature.setText(String.valueOf(unsignedByteToInt(data[6])));
+        	this.maxTemperature.setText(String.valueOf(unsignedByteToInt(data[7])));
+        	val = unsignedByteToInt(data[8]);
+            val += unsignedByteToInt(data[9]) << 8;
+            if ((val & 0x8000) != 0)
+            	this.torqueFix.setText(String.valueOf(val&0x7fff));
+            else
+            	this.torqueFix.setText(String.valueOf(0));
+        	this.torqueADCStep.setText(String.valueOf(data[10]));
+    		break;
+    	case 3:
+        	this.phaseAngles.setText(String.format(Locale.getDefault(), "%d,%d,%d,%d,%d,%d", 
+        			unsignedByteToInt(data[5]),unsignedByteToInt(data[6]),unsignedByteToInt(data[7]),
+        			unsignedByteToInt(data[8]),unsignedByteToInt(data[9]),unsignedByteToInt(data[10])));
+    		break;
+    	case 4:
+        	// TODO ui8_hall_counter_offset_cal
     		break;
     	}
     }
@@ -292,7 +300,7 @@ public class OsfControllerSim extends Application implements Initializable, Seri
     		msg[2] = (byte)((val>>8) & 0xff);
     		
     		// Current
-    		msg[3] = (byte)(OsfControllerSim.this.current.getValue()*10);
+    		msg[3] = (byte)((int)(current.getValue()*10) & 0xff);
     		
     		// wheel speed
     		val = (int)(OsfControllerSim.this.speed.getValue() * 10);
@@ -327,18 +335,24 @@ public class OsfControllerSim extends Application implements Initializable, Seri
     		msg[9] = (byte)(OsfControllerSim.this.temperature.getValue());
     		
     		if (ridingModeVal == 7) {
-    			msg[10] = (byte)200;
-    			msg[11] = (byte)1;
-    			msg[12] = (byte)190;
-    			msg[13] = (byte)1;
-    			msg[14] = (byte)210;
-    			msg[15] = (byte)1;
-    			msg[16] = (byte)200;
-    			msg[17] = (byte)1;
-    			msg[18] = (byte)180;
-    			msg[19] = (byte)1;
-    			msg[20] = (byte)220;
-    			msg[21] = (byte)1;
+    			val = (int)(57D/360D*250000D/(double)ridingParamVal + 20);
+    			msg[10] = (byte)(val & 0xff);
+    			msg[11] = (byte)((val >> 8) & 0xff);
+    			val = (int)(58D/360D*250000D/(double)ridingParamVal - 20);
+    			msg[12] = (byte)(val & 0xff);
+    			msg[13] = (byte)((val >> 8) & 0xff);
+    			val = (int)(59D/360D*250000D/(double)ridingParamVal + 20);
+    			msg[14] = (byte)(val & 0xff);
+    			msg[15] = (byte)((val >> 8) & 0xff);
+    			val = (int)(61D/360D*250000D/(double)ridingParamVal - 20);
+    			msg[16] = (byte)(val & 0xff);
+    			msg[17] = (byte)((val >> 8) & 0xff);
+    			val = (int)(62D/360D*250000D/(double)ridingParamVal + 20);
+    			msg[18] = (byte)(val & 0xff);
+    			msg[19] = (byte)((val >> 8) & 0xff);
+    			val = (int)(63D/360D*250000D/(double)ridingParamVal - 20);
+    			msg[20] = (byte)(val & 0xff);
+    			msg[21] = (byte)((val >> 8) & 0xff);
     		} else {
 	    		// value from optional ADC channel
 	    		msg[10] = (byte)(OsfControllerSim.this.adcValue.getValue());
@@ -374,7 +388,7 @@ public class OsfControllerSim extends Application implements Initializable, Seri
 	            msg[23] = (byte)(crankRev&0xff);
 	            msg[24] = (byte)((crankRev>>8) & 0xff);
 	            
-	    		// cadence sensor pulse high percentage
+	    		// Dummy
 	    		val = (int)(OsfControllerSim.this.dummy.getValue());
 	    		msg[25] = (byte)(val&0xff);
 	    		msg[26] = (byte)((val>>8) & 0xff);
@@ -388,7 +402,6 @@ public class OsfControllerSim extends Application implements Initializable, Seri
             msg[CT_OS_MSG_BYTES-1] = (byte) ((crc_tx >> 8) & 0xff);	
 
      	   //javafx.application.Platform.runLater( () -> error.appendText("Sending " + bytesToHex(msg, crc_tx) + " bytes\n"));
-           
       	   serialPort.writeBytes(msg, CT_OS_MSG_BYTES);
      	   
     	   //javafx.application.Platform.runLater( () -> error.appendText("Sent " + ret + " bytes\n"));
@@ -448,7 +461,7 @@ public class OsfControllerSim extends Application implements Initializable, Seri
 		int crc_calc = 0xffff;
         for (int i = 0; i < LCD_OS_MSG_BYTES-2; i++)
         	crc_calc = crc16(msg[i], crc_calc);
-        int crc_rx = (msg[8] & 255) + ((msg[9] & 255) << 8);
+        int crc_rx = (msg[LCD_OS_MSG_BYTES-2] & 255) + ((msg[LCD_OS_MSG_BYTES-1] & 255) << 8);
         return crc_rx == crc_calc;
 	}
 	
